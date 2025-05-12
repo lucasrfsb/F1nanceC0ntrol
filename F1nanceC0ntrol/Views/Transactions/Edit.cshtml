@@ -1,0 +1,79 @@
+﻿@model F1nanceC0ntrol.Models.FinancialTransaction
+
+@{
+    ViewData["Title"] = "Editar Transação";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="Edit">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="Id" />
+
+                    <div class="form-group">
+                        <label asp-for="Type" class="control-label"></label>
+                        <select asp-for="Type" class="form-control" asp-items="Html.GetEnumSelectList<TransactionType>()"></select>
+                        <span asp-validation-for="Type" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Description" class="control-label"></label>
+                        <input asp-for="Description" class="form-control" />
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Amount" class="control-label"></label>
+                        <input asp-for="Amount" class="form-control" />
+                        <span asp-validation-for="Amount" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="TransactionDate" class="control-label"></label>
+                        <input asp-for="TransactionDate" class="form-control" type="date" />
+                        <span asp-validation-for="TransactionDate" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="CategoryId" class="control-label"></label>
+                        <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId">
+                            <option value="">-- Selecione uma categoria --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Notes" class="control-label"></label>
+                        <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Notes" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                        <a asp-action="Index" class="btn btn-secondary">Voltar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-warning">
+                <h5>Atenção</h5>
+            </div>
+            <div class="card-body">
+                <p>Ao editar uma transação, todos os relatórios e balanços serão atualizados automaticamente.</p>
+                <p>Certifique-se de que os dados estão corretos antes de salvar.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
