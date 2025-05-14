@@ -1,14 +1,45 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace F1nanceC0ntrol.ViewModels
 {
     // ViewModel para análise de todos os custos
     public class AllCostsAnalysisViewModel
     {
+        [Display(Name = "Data Inicial")]
+        [DataType(DataType.Date)]
         public DateTime StartDate { get; set; }
+
+        [Display(Name = "Data Final")]
+        [DataType(DataType.Date)]
         public DateTime EndDate { get; set; }
-        public string GroupBy { get; set; } // "Category", "Month", "Year"
+
+        [Display(Name = "Categoria")]
+        public int? CategoryId { get; set; }
+
+        public SelectList Categories { get; set; }
+
+        [Display(Name = "Ordenar Por")]
+        public string SortBy { get; set; } // "Date" ou "Value"
+
+        [Display(Name = "Ordem")]
+        public string SortOrder { get; set; } // "Asc" ou "Desc"
+
+        public List<CostItem> Costs { get; set; } = new List<CostItem>();
+
+        public decimal TotalValue { get; set; }
+    }
+
+    public class CostItem
+    {
+        public int Id { get; set; }
+        public string Type { get; set; }
+        public DateTime Date { get; set; }
+        public string Category { get; set; }
+        public decimal Value { get; set; }
+        public string Description { get; set; }
     }
 
     // ViewModel para análise de custos fixos

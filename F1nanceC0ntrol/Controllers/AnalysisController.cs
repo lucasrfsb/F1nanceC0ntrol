@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using F1nanceC0ntrol.Data;
 using F1nanceC0ntrol.Models;
 using F1nanceC0ntrol.ViewModels;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace F1nanceC0ntrol.Controllers
 {
@@ -46,11 +47,138 @@ namespace F1nanceC0ntrol.Controllers
 
             return View(viewModel);
         }
-
-        public IActionResult AllCosts()
+        public async Task<IActionResult> AllCosts(
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            int? categoryId = null,
+            string sortBy = "Date",
+            string sortOrder = "Desc")
         {
-            // Implementação futura
-            return View();
+            // Configurar datas padrão se não forem fornecidas
+            var model = new AllCostsAnalysisViewModel
+            {
+                StartDate = startDate ?? DateTime.Now.AddMonths(-1),
+                EndDate = endDate ?? DateTime.Now,
+                CategoryId = categoryId,
+                SortBy = sortBy ?? "Date",
+                SortOrder = sortOrder ?? "Desc"
+            };
+
+            // Carregar categorias para o dropdown
+            model.Categories = new SelectList(await _context.Categories.ToListAsync(), "Id", "Name");
+
+            // Ajustar a data final para incluir todo o dia
+            var endDateAdjusted = model.EndDate.AddDays(1).AddSeconds(-1);
+
+            // Consultar todos os tipos de custos
+            var costs = new List<CostItem>();
+
+            // 1. SellerCommissions
+            var commissions = await _context.SellerCommissions
+                .Include(c => c.Category)
+                .Where(c => c.Date >= model.StartDate && c.Date <= endDateAdjusted)
+                .Where(c => model.CategoryId == null || c.CategoryId == model.CategoryId)
+                .Select(c => new CostItem
+                {
+                    Id = c.Id,
+                    Type = "Comissionamento",
+                    Date = c.Date,
+                    Category = c.Category.Name,
+                    Value = c.Value,
+                    Description = $"Funcionário: {c.EmployeeName}"
+                })
+                .ToListAsync();
+            costs.AddRange(commissions);
+
+            // 2. DailyOperationCosts
+            var dailyCosts = await _context.DailyOperationCosts
+                .Include(c => c.Category)
+                .Where(c => c.Date >= model.StartDate && c.Date <= endDateAdjusted)
+                .Where(c => model.CategoryId == null || c.CategoryId == model.CategoryId)
+                .Select(c => new CostItem
+                {
+                    Id = c.Id,
+                    Type = "Custo Diário",
+                    Date = c.Date,
+                    Category = c.Category.Name,
+                    Value = c.Value,
+                    Description = "Custo de operação diária"
+                })
+                .ToListAsync();
+            costs.AddRange(dailyCosts);
+
+            // 3. FixedCosts
+            var fixedCosts = await _context.FixedCosts
+                .Include(c => c.Category)
+                .Where(c => c.Date >= model.StartDate && c.Date <= endDateAdjusted)
+                .Where(c => model.CategoryId == null || c.CategoryId == model.CategoryId)
+                .Select(c => new CostItem
+                {
+                    Id = c.Id,
+                    Type = "Custo Fixo",
+                    Date = c.Date,
+                    Category = c.Category.Name,
+                    Value = c.Value,
+                    Description = "Custo fixo mensal"
+                })
+                .ToListAsync();
+            costs.AddRange(fixedCosts);
+
+            // 4. AfterSaleCosts
+            var afterSaleCosts = await _context.AfterSaleCosts
+                .Include(c => c.Category)
+                .Where(c => c.Date >= model.StartDate && c.Date <= endDateAdjusted)
+                .Where(c => model.CategoryId == null || c.CategoryId == model.CategoryId)
+                .Select(c => new CostItem
+                {
+                    Id = c.Id,
+                    Type = "Pós-Venda",
+                    Date = c.Date,
+                    Category = c.Category.Name,
+                    Value = c.Value,
+                    Description = $"Carro: {c.Car}, Placa: {c.LicensePlate}"
+                })
+                .ToListAsync();
+            costs.AddRange(afterSaleCosts);
+
+            // 5. CarCosts
+            var carCosts = await _context.CarCosts
+                .Include(c => c.Category)
+                .Where(c => c.Date >= model.StartDate && c.Date <= endDateAdjusted)
+                .Where(c => model.CategoryId == null || c.CategoryId == model.CategoryId)
+                .Select(c => new CostItem
+                {
+                    Id = c.Id,
+                    Type = "Custo de Carro",
+                    Date = c.Date,
+                    Category = c.Category.Name,
+                    Value = c.Value,
+                    Description = $"Carro: {c.Car}, Placa: {c.LicensePlate}"
+                })
+                .ToListAsync();
+            costs.AddRange(carCosts);
+
+            // Ordenar os resultados
+            if (model.SortBy == "Date")
+            {
+                costs = model.SortOrder == "Asc"
+                    ? costs.OrderBy(c => c.Date).ToList()
+                    : costs.OrderByDescending(c => c.Date).ToList();
+            }
+            else // Value
+            {
+                costs = model.SortOrder == "Asc"
+                    ? costs.OrderBy(c => c.Value).ToList()
+                    : costs.OrderByDescending(c => c.Value).ToList();
+            }
+
+            // Calcular o total
+            model.TotalValue = costs.Sum(c => c.Value);
+
+            // Atribuir os custos ao modelo
+            model.Costs = costs;
+
+            return View(model);
         }
 
         public IActionResult FixedCosts()
