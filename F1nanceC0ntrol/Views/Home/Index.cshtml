@@ -1,1 +1,38 @@
-﻿
+﻿@{
+    ViewData["Title"] = "Início";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Sistema de Controle Financeiro</h1>
+    <p>Selecione uma das opções abaixo para começar:</p>
+
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Adicionar Transação</h5>
+                    <p class="card-text">Registre uma nova transação financeira.</p>
+                    <a asp-action="AddTransaction" class="btn btn-primary">Adicionar</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Ver Transações</h5>
+                    <p class="card-text">Visualize e gerencie as transações existentes.</p>
+                    <a asp-action="ViewTransactions" class="btn btn-primary">Visualizar</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Analisar</h5>
+                    <p class="card-text">Acesse relatórios e análises financeiras.</p>
+                    <a asp-action="Analyze" class="btn btn-primary">Analisar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

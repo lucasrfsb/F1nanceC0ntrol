@@ -1,7 +1,5 @@
 ﻿using F1nanceC0ntrol.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Reflection.Emit;
 
 namespace F1nanceC0ntrol.Data
 {
@@ -12,18 +10,27 @@ namespace F1nanceC0ntrol.Data
         {
         }
 
-        public DbSet<FinancialTransaction> Transactions { get; set; }
         public DbSet<Category> Categories { get; set; }
+
+        // Novas tabelas para cada tipo de transação
+        public DbSet<SellerCommission> SellerCommissions { get; set; }
+        public DbSet<DailyOperationCost> DailyOperationCosts { get; set; }
+        public DbSet<FixedCost> FixedCosts { get; set; }
+        public DbSet<AfterSaleCost> AfterSaleCosts { get; set; }
+        public DbSet<CarCost> CarCosts { get; set; }
+        public DbSet<FinancingReturn> FinancingReturns { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Configurações adicionais do modelo, se necessário
-            modelBuilder.Entity<FinancialTransaction>()
-                .HasOne(t => t.Category)
-                .WithMany()
-                .HasForeignKey(t => t.CategoryId)
-                .OnDelete(DeleteBehavior.SetNull);
+            base.OnModelCreating(modelBuilder);
+
+            // Configurações adicionais se necessário
+            modelBuilder.Entity<SellerCommission>().ToTable("SellerCommissions");
+            modelBuilder.Entity<DailyOperationCost>().ToTable("DailyOperationCosts");
+            modelBuilder.Entity<FixedCost>().ToTable("FixedCosts");
+            modelBuilder.Entity<AfterSaleCost>().ToTable("AfterSaleCosts");
+            modelBuilder.Entity<CarCost>().ToTable("CarCosts");
+            modelBuilder.Entity<FinancingReturn>().ToTable("FinancingReturns");
         }
     }
 }
-

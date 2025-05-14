@@ -1,0 +1,149 @@
+﻿USE [F1nanceC0ntrol]
+GO
+/****** Object:  Table [dbo].[AfterSaleCosts]    Script Date: 14/05/2025 15:06:38 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[AfterSaleCosts](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[LicensePlate] [nvarchar](10) NOT NULL,
+	[Car] [nvarchar](100) NOT NULL,
+	[Date] [datetime2](7) NOT NULL,
+	[Value] [decimal](18, 2) NOT NULL,
+	[CategoryId] [int] NULL,
+ CONSTRAINT [PK_AfterSaleCosts] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[CarCosts]    Script Date: 14/05/2025 15:06:38 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[CarCosts](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[LicensePlate] [nvarchar](10) NOT NULL,
+	[Car] [nvarchar](100) NOT NULL,
+	[Date] [datetime2](7) NOT NULL,
+	[Value] [decimal](18, 2) NOT NULL,
+	[CategoryId] [int] NULL,
+ CONSTRAINT [PK_CarCosts] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Categories]    Script Date: 14/05/2025 15:06:38 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Categories](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Name] [nvarchar](50) NOT NULL,
+	[Description] [nvarchar](200) NOT NULL,
+ CONSTRAINT [PK_Categories] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[DailyOperationCosts]    Script Date: 14/05/2025 15:06:38 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[DailyOperationCosts](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Date] [datetime2](7) NOT NULL,
+	[Value] [decimal](18, 2) NOT NULL,
+	[CategoryId] [int] NULL,
+ CONSTRAINT [PK_DailyOperationCosts] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[FinancingReturns]    Script Date: 14/05/2025 15:06:38 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[FinancingReturns](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Bank] [nvarchar](100) NOT NULL,
+	[Date] [datetime2](7) NOT NULL,
+	[Value] [decimal](18, 2) NOT NULL,
+	[CategoryId] [int] NULL,
+ CONSTRAINT [PK_FinancingReturns] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[FixedCosts]    Script Date: 14/05/2025 15:06:38 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[FixedCosts](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Date] [datetime2](7) NOT NULL,
+	[Value] [decimal](18, 2) NOT NULL,
+	[CategoryId] [int] NULL,
+ CONSTRAINT [PK_FixedCosts] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[SellerCommissions]    Script Date: 14/05/2025 15:06:38 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[SellerCommissions](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[EmployeeName] [nvarchar](100) NOT NULL,
+	[Date] [datetime2](7) NOT NULL,
+	[Value] [decimal](18, 2) NOT NULL,
+	[CategoryId] [int] NULL,
+ CONSTRAINT [PK_SellerCommissions] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[AfterSaleCosts]  WITH CHECK ADD  CONSTRAINT [FK_AfterSaleCosts_Categories_CategoryId] FOREIGN KEY([CategoryId])
+REFERENCES [dbo].[Categories] ([Id])
+GO
+ALTER TABLE [dbo].[AfterSaleCosts] CHECK CONSTRAINT [FK_AfterSaleCosts_Categories_CategoryId]
+GO
+ALTER TABLE [dbo].[CarCosts]  WITH CHECK ADD  CONSTRAINT [FK_CarCosts_Categories_CategoryId] FOREIGN KEY([CategoryId])
+REFERENCES [dbo].[Categories] ([Id])
+GO
+ALTER TABLE [dbo].[CarCosts] CHECK CONSTRAINT [FK_CarCosts_Categories_CategoryId]
+GO
+ALTER TABLE [dbo].[DailyOperationCosts]  WITH CHECK ADD  CONSTRAINT [FK_DailyOperationCosts_Categories_CategoryId] FOREIGN KEY([CategoryId])
+REFERENCES [dbo].[Categories] ([Id])
+GO
+ALTER TABLE [dbo].[DailyOperationCosts] CHECK CONSTRAINT [FK_DailyOperationCosts_Categories_CategoryId]
+GO
+ALTER TABLE [dbo].[FinancingReturns]  WITH CHECK ADD  CONSTRAINT [FK_FinancingReturns_Categories_CategoryId] FOREIGN KEY([CategoryId])
+REFERENCES [dbo].[Categories] ([Id])
+GO
+ALTER TABLE [dbo].[FinancingReturns] CHECK CONSTRAINT [FK_FinancingReturns_Categories_CategoryId]
+GO
+ALTER TABLE [dbo].[FixedCosts]  WITH CHECK ADD  CONSTRAINT [FK_FixedCosts_Categories_CategoryId] FOREIGN KEY([CategoryId])
+REFERENCES [dbo].[Categories] ([Id])
+GO
+ALTER TABLE [dbo].[FixedCosts] CHECK CONSTRAINT [FK_FixedCosts_Categories_CategoryId]
+GO
+ALTER TABLE [dbo].[SellerCommissions]  WITH CHECK ADD  CONSTRAINT [FK_SellerCommissions_Categories_CategoryId] FOREIGN KEY([CategoryId])
+REFERENCES [dbo].[Categories] ([Id])
+GO
+ALTER TABLE [dbo].[SellerCommissions] CHECK CONSTRAINT [FK_SellerCommissions_Categories_CategoryId]
+GO

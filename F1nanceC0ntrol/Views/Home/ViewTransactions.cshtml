@@ -1,0 +1,66 @@
+﻿@{
+    ViewData["Title"] = "Ver Transações";
+}
+
+<h1>Ver Transações</h1>
+<p>Selecione o tipo de transação que deseja visualizar:</p>
+
+<div class="row mt-4">
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Comissionamento dos Vendedores</h5>
+                <a asp-controller="SellerCommissions" asp-action="Index" class="btn btn-primary">Visualizar</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Custo Diário de Operação</h5>
+                <a asp-controller="DailyOperationCosts" asp-action="Index" class="btn btn-primary">Visualizar</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Custos Fixos</h5>
+                <a asp-controller="FixedCosts" asp-action="Index" class="btn btn-primary">Visualizar</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Custo de Pós-Venda</h5>
+                <a asp-controller="AfterSaleCosts" asp-action="Index" class="btn btn-primary">Visualizar</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Custo dos Carros</h5>
+                <a asp-controller="CarCosts" asp-action="Index" class="btn btn-primary">Visualizar</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Lucro Retorno de Financiamento</h5>
+                <a asp-controller="FinancingReturns" asp-action="Index" class="btn btn-primary">Visualizar</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-action="Index" class="btn btn-secondary">Voltar</a>
+</div>

@@ -1,0 +1,41 @@
+﻿@model F1nanceC0ntrol.Models.FinancingReturn
+
+@{
+    ViewData["Title"] = "Detalhes do Lucro de Retorno de Financiamento";
+}
+
+<h1>Detalhes do Lucro de Retorno de Financiamento</h1>
+
+<div>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Category)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Category.Name)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Bank)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Bank)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Date)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Date)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Value)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Value)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Editar</a>
+    <a asp-action="Index" class="btn btn-secondary">Voltar</a>
+</div>
