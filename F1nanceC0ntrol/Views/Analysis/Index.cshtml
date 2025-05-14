@@ -1,0 +1,62 @@
+﻿@{
+    ViewData["Title"] = "Análise Financeira";
+}
+
+<h1>Análise Financeira</h1>
+<p>Selecione o tipo de análise que deseja visualizar:</p>
+
+<div class="row mt-4">
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Lucro e Custo ao Longo do Tempo</h5>
+                <p class="card-text">Visualize a evolução de lucros e custos em um período.</p>
+                <a asp-action="ProfitCost" class="btn btn-primary">Visualizar</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Todos os Custos</h5>
+                <p class="card-text">Análise detalhada de todos os tipos de custos.</p>
+                <a asp-action="AllCosts" class="btn btn-primary">Visualizar</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Custos Fixos</h5>
+                <p class="card-text">Análise específica dos custos fixos.</p>
+                <a asp-action="FixedCosts" class="btn btn-primary">Visualizar</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Custo e Lucro de Cada Carro</h5>
+                <p class="card-text">Análise de rentabilidade por veículo.</p>
+                <a asp-action="CarProfitCost" class="btn btn-primary">Visualizar</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Retorno Financeiro</h5>
+                <p class="card-text">Análise dos retornos de financiamento.</p>
+                <a asp-action="FinancialReturn" class="btn btn-primary">Visualizar</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Voltar</a>
+</div>

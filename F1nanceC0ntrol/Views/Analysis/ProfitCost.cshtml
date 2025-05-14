@@ -1,0 +1,157 @@
+﻿@model F1nanceC0ntrol.ViewModels.ProfitCostAnalysisViewModel
+@{
+    ViewData["Title"] = "Análise de Lucro e Custo";
+}
+
+<h1>Análise de Lucro e Custo ao Longo do Tempo</h1>
+
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header">
+                <h5>Filtros</h5>
+            </div>
+            <div class="card-body">
+                <form id="filterForm">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label for="startDate" class="form-label">Data Inicial</label>
+                        <input type="date" class="form-control" id="startDate" name="startDate" value="@Model.StartDate.ToString("yyyy-MM-dd")">
+                    </div>
+                    <div class="mb-3">
+                        <label for="endDate" class="form-label">Data Final</label>
+                        <input type="date" class="form-control" id="endDate" name="endDate" value="@Model.EndDate.ToString("yyyy-MM-dd")">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Agregação</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="aggregationType" id="aggregationMonth" value="Month" checked>
+                            <label class="form-check-label" for="aggregationMonth">
+                                Por Mês
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="aggregationType" id="aggregationYear" value="Year">
+                            <label class="form-check-label" for="aggregationYear">
+                                Por Ano
+                            </label>
+                        </div>
+                    </div>
+                    <button type="button" id="generateChartBtn" class="btn btn-primary">Gerar Gráfico</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-header">
+                <h5>CUSTO e LUCRO ao longo do Tempo</h5>
+            </div>
+            <div class="card-body">
+                <div id="chartContainer">
+                    <canvas id="profitCostChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-action="Index" class="btn btn-secondary">Voltar</a>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let profitCostChart;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar o gráfico vazio
+            const ctx = document.getElementById('profitCostChart').getContext('2d');
+            profitCostChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Valor (R$)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Período'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Configurar o botão de gerar gráfico
+            document.getElementById('generateChartBtn').addEventListener('click', generateChart);
+
+            // Gerar o gráfico inicial
+            generateChart();
+        });
+
+        async function generateChart() {
+            const startDateStr = document.getElementById('startDate').value;
+            const endDateStr = document.getElementById('endDate').value;
+            const aggregationType = document.querySelector('input[name="aggregationType"]:checked').value;
+
+            // Verificar se as strings de data são válidas
+            if (!startDateStr || !endDateStr) {
+                alert('Por favor, selecione datas válidas.');
+                return;
+            }
+
+            try {
+                // Obter o token anti-falsificação
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+                const response = await fetch('/Analysis/GetProfitCostData', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        startDate: startDateStr,
+                        endDate: endDateStr,
+                        aggregationType: aggregationType
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro na requisição: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Atualizar o gráfico
+                profitCostChart.data.labels = data.labels;
+                profitCostChart.data.datasets = data.datasets;
+                profitCostChart.update();
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Ocorreu um erro ao gerar o gráfico. Por favor, tente novamente.');
+            }
+        }
+    </script>
+}
