@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using F1nanceC0ntrol.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -116,5 +117,61 @@ namespace F1nanceC0ntrol.ViewModels
         public DateTime EndDate { get; set; }
         public string Bank { get; set; } // Opcional, para filtrar por banco
         public string GroupBy { get; set; } // "Bank", "Month", "Year"
+    }
+
+    // ViewModel para análise de todos os custos, vendas e lucros
+    public class AllTransactionsAnalysisViewModel
+    {
+        [Display(Name = "Data Inicial")]
+        [DataType(DataType.Date)]
+        public DateTime StartDate { get; set; }
+
+        [Display(Name = "Data Final")]
+        [DataType(DataType.Date)]
+        public DateTime EndDate { get; set; }
+
+        [Display(Name = "Categorias")]
+        public List<int?> CategoryIds { get; set; } = new List<int?>();
+
+        [Display(Name = "Placa")]
+        public string LicensePlate { get; set; }
+
+        [Display(Name = "Carro")]
+        public string Car { get; set; }
+
+        [Display(Name = "Mostrar Custos")]
+        public bool ShowCosts { get; set; } = true;
+
+        [Display(Name = "Mostrar Vendas")]
+        public bool ShowSales { get; set; } = true;
+
+        [Display(Name = "Ordenar Por")]
+        public string SortBy { get; set; } // "Date" ou "Value"
+
+        [Display(Name = "Ordem")]
+        public string SortOrder { get; set; } // "Asc" ou "Desc"
+
+        public List<Category> AvailableCategories { get; set; } = new List<Category>();
+
+        public List<TransactionItem> Transactions { get; set; } = new List<TransactionItem>();
+
+        public decimal TotalCosts { get; set; }
+        public decimal TotalSales { get; set; }
+        public decimal ResultadoLiquido => TotalSales - TotalCosts;
+    }
+
+    public class TransactionItem
+    {
+        public int Id { get; set; }
+        public string Type { get; set; } // "Custo" ou "Venda"
+        public string TransactionType { get; set; } // Tipo específico da transação
+        public DateTime Date { get; set; }
+        public string Category { get; set; }
+        public int? CategoryId { get; set; }
+        public string LicensePlate { get; set; }
+        public string Car { get; set; }
+        public string Bank { get; set; }
+        public decimal Value { get; set; }
+        public string Description { get; set; }
     }
 }

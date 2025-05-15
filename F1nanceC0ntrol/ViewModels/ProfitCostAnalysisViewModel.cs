@@ -21,4 +21,13 @@ namespace F1nanceC0ntrol.ViewModels
         [JsonPropertyName("aggregationType")]
         public string AggregationType { get; set; }
     }
+
+    public class ProfitCostChartDataPoint
+    {
+        public DateTime Date { get; set; }
+        public string Label { get; set; }
+        public decimal Costs { get; set; }
+        public decimal Sales { get; set; }
+        public decimal Profit => Sales - Costs;
+    }
 }

@@ -56,199 +56,191 @@ namespace F1nanceC0ntrol.Controllers
         [HttpPost]
         public async Task<JsonResult> GetProfitCostData([FromBody] ProfitCostFilterModel filter)
         {
-            // Validar e configurar datas
-            DateTime startDate = filter.StartDate;
-            DateTime endDate = filter.EndDate;
-            string aggregationType = filter.AggregationType;
-
-            // Validar datas
-            if (startDate == DateTime.MinValue)
-                startDate = DateTime.Now.AddYears(-1);
-            if (endDate == DateTime.MinValue)
-                endDate = DateTime.Now;
-            if (startDate > endDate)
+            try
             {
-                var temp = startDate;
-                startDate = endDate;
-                endDate = temp;
-            }
-            if (string.IsNullOrEmpty(aggregationType))
-                aggregationType = "Month";
+                // Validar e configurar datas
+                DateTime startDate = filter.StartDate;
+                DateTime endDate = filter.EndDate;
+                string aggregationType = filter.AggregationType;
 
-            // Ajustar endDate para incluir todo o dia
-            endDate = endDate.AddDays(1).AddSeconds(-1);
-
-            // Consultar dados de custo
-            var costs = new List<object>();
-
-            // 1. FixedCosts
-            var fixedCosts = await _context.FixedCosts
-                .Where(c => c.Date >= startDate && c.Date <= endDate)
-                .Select(c => new { c.Date, c.Value })
-                .ToListAsync();
-            costs.AddRange(fixedCosts);
-
-            // 2. DailyOperationCosts
-            var dailyCosts = await _context.DailyOperationCosts
-                .Where(c => c.Date >= startDate && c.Date <= endDate)
-                .Select(c => new { c.Date, c.Value })
-                .ToListAsync();
-            costs.AddRange(dailyCosts);
-
-            // 3. AfterSaleCosts
-            var afterSaleCosts = await _context.AfterSaleCosts
-                .Where(c => c.Date >= startDate && c.Date <= endDate)
-                .Select(c => new { c.Date, c.Value })
-                .ToListAsync();
-            costs.AddRange(afterSaleCosts);
-
-            // 4. CarCosts
-            var carCosts = await _context.CarCosts
-                .Where(c => c.Date >= startDate && c.Date <= endDate)
-                .Select(c => new { c.Date, c.Value })
-                .ToListAsync();
-            costs.AddRange(carCosts);
-
-            // 5. SellerCommissions
-            var commissions = await _context.SellerCommissions
-                .Where(c => c.Date >= startDate && c.Date <= endDate)
-                .Select(c => new { c.Date, c.Value })
-                .ToListAsync();
-            costs.AddRange(commissions);
-
-            // Consultar dados de lucro
-            var profits = new List<object>();
-
-            // 1. FinancingReturns
-            var financingReturns = await _context.FinancingReturns
-                .Where(p => p.Date >= startDate && p.Date <= endDate)
-                .Select(p => new { p.Date, p.Value })
-                .ToListAsync();
-            profits.AddRange(financingReturns);
-
-            // 2. CarSaleProfits (precisamos calcular o lucro)
-            var carSales = await _context.CarSaleProfits
-                .Where(s => s.Date >= startDate && s.Date <= endDate)
-                .ToListAsync();
-
-            foreach (var sale in carSales)
-            {
-                // Obter todos os custos para este carro
-                var totalCarCost = await _context.CarCosts
-                    .Where(c => c.LicensePlate == sale.LicensePlate)
-                    .SumAsync(c => c.Value);
-
-                var totalAfterSaleCost = await _context.AfterSaleCosts
-                    .Where(c => c.LicensePlate == sale.LicensePlate)
-                    .SumAsync(c => c.Value);
-
-                // Calcular o lucro como valor de venda menos o total de custos
-                var profit = sale.Value - (totalCarCost + totalAfterSaleCost);
-
-                profits.Add(new { sale.Date, Value = profit });
-            }
-
-            // Agregar dados por mês ou ano
-            var costData = new List<decimal>();
-            var profitData = new List<decimal>();
-            var labels = new List<string>();
-
-            if (aggregationType == "Month")
-            {
-                // Agrupar por mês
-                var months = Enumerable.Range(0, (endDate.Year - startDate.Year) * 12 + endDate.Month - startDate.Month + 1)
-                    .Select(m => startDate.AddMonths(m))
-                    .ToList();
-
-                foreach (var month in months)
+                // Validar datas
+                if (startDate == DateTime.MinValue)
+                    startDate = DateTime.Now.AddYears(-1);
+                if (endDate == DateTime.MinValue)
+                    endDate = DateTime.Now;
+                if (startDate > endDate)
                 {
-                    var monthStart = new DateTime(month.Year, month.Month, 1);
-                    var monthEnd = monthStart.AddMonths(1).AddDays(-1);
-
-                    var monthlyCosts = costs
-                        .Where(c => ((dynamic)c).Date >= monthStart && ((dynamic)c).Date <= monthEnd)
-                        .Sum(c => (decimal)((dynamic)c).Value);
-
-                    var monthlyProfits = profits
-                        .Where(p => ((dynamic)p).Date >= monthStart && ((dynamic)p).Date <= monthEnd)
-                        .Sum(p => (decimal)((dynamic)p).Value);
-
-                    costData.Add(monthlyCosts);
-                    profitData.Add(monthlyProfits);
-                    labels.Add(month.ToString("MMM yyyy"));
+                    var temp = startDate;
+                    startDate = endDate;
+                    endDate = temp;
                 }
-            }
-            else // Year
-            {
-                // Agrupar por ano
-                var years = Enumerable.Range(startDate.Year, endDate.Year - startDate.Year + 1).ToList();
+                if (string.IsNullOrEmpty(aggregationType))
+                    aggregationType = "Month";
 
-                foreach (var year in years)
+                // Ajustar endDate para incluir todo o dia
+                endDate = endDate.AddDays(1).AddSeconds(-1);
+
+                // Lista para armazenar os pontos de dados agregados
+                var dataPoints = new List<ProfitCostChartDataPoint>();
+
+                // Determinar os períodos de agregação (meses ou anos)
+                var periods = new List<DateTime>();
+
+                if (aggregationType == "Month")
                 {
-                    var yearStart = new DateTime(year, 1, 1);
-                    var yearEnd = new DateTime(year, 12, 31);
-
-                    var yearlyCosts = costs
-                        .Where(c => ((dynamic)c).Date.Year == year)
-                        .Sum(c => (decimal)((dynamic)c).Value);
-
-                    var yearlyProfits = profits
-                        .Where(p => ((dynamic)p).Date.Year == year)
-                        .Sum(p => (decimal)((dynamic)p).Value);
-
-                    costData.Add(yearlyCosts);
-                    profitData.Add(yearlyProfits);
-                    labels.Add(year.ToString());
-                }
-            }
-
-            // Calcular soma do lucro (linha verde no gráfico)
-            var profitSum = new List<decimal>();
-            decimal runningSum = 0;
-
-            foreach (var profit in profitData)
-            {
-                runningSum += profit;
-                profitSum.Add(runningSum);
-            }
-
-            return Json(new
-            {
-                labels,
-                datasets = new object[]
-                {
-                    new
+                    // Criar uma lista de todos os meses no intervalo
+                    for (var date = new DateTime(startDate.Year, startDate.Month, 1);
+                         date <= endDate;
+                         date = date.AddMonths(1))
                     {
-                        label = "Custo",
-                        data = costData,
-                        backgroundColor = "rgba(255, 99, 132, 0.7)",
-                        borderColor = "rgba(255, 99, 132, 1)",
-                        borderWidth = 1,
-                        type = "bar"
-                    },
-                    new
-                    {
-                        label = "Lucro",
-                        data = profitData,
-                        backgroundColor = "rgba(54, 162, 235, 0.7)",
-                        borderColor = "rgba(54, 162, 235, 1)",
-                        borderWidth = 1,
-                        type = "bar"
-                    },
-                    new
-                    {
-                        label = "Soma do Lucro",
-                        data = profitSum,
-                        borderColor = "rgba(75, 192, 192, 1)",
-                        backgroundColor = "rgba(0, 0, 0, 0)",
-                        borderWidth = 2,
-                        type = "line",
-                        tension = 0.1
+                        periods.Add(date);
                     }
                 }
-            });
-        }
+                else // Year
+                {
+                    // Criar uma lista de todos os anos no intervalo
+                    for (var year = startDate.Year; year <= endDate.Year; year++)
+                    {
+                        periods.Add(new DateTime(year, 1, 1));
+                    }
+                }
 
+                // Para cada período, calcular custos, vendas e lucro
+                foreach (var period in periods)
+                {
+                    DateTime periodStart, periodEnd;
+                    string label;
+
+                    if (aggregationType == "Month")
+                    {
+                        periodStart = new DateTime(period.Year, period.Month, 1);
+                        periodEnd = periodStart.AddMonths(1).AddDays(-1);
+                        label = periodStart.ToString("MMM yyyy");
+                    }
+                    else // Year
+                    {
+                        periodStart = new DateTime(period.Year, 1, 1);
+                        periodEnd = new DateTime(period.Year, 12, 31);
+                        label = period.Year.ToString();
+                    }
+
+                    // Ajustar periodEnd para incluir todo o dia
+                    periodEnd = periodEnd.AddDays(1).AddSeconds(-1);
+
+                    // Calcular custos para este período
+                    decimal totalCosts = 0;
+
+                    // 1. FixedCosts
+                    var fixedCosts = await _context.FixedCosts
+                        .Where(c => c.Date >= periodStart && c.Date <= periodEnd)
+                        .SumAsync(c => c.Value);
+                    totalCosts += fixedCosts;
+
+                    // 2. DailyOperationCosts
+                    var dailyCosts = await _context.DailyOperationCosts
+                        .Where(c => c.Date >= periodStart && c.Date <= periodEnd)
+                        .SumAsync(c => c.Value);
+                    totalCosts += dailyCosts;
+
+                    // 3. AfterSaleCosts
+                    var afterSaleCosts = await _context.AfterSaleCosts
+                        .Where(c => c.Date >= periodStart && c.Date <= periodEnd)
+                        .SumAsync(c => c.Value);
+                    totalCosts += afterSaleCosts;
+
+                    // 4. CarCosts
+                    var carCosts = await _context.CarCosts
+                        .Where(c => c.Date >= periodStart && c.Date <= periodEnd)
+                        .SumAsync(c => c.Value);
+                    totalCosts += carCosts;
+
+                    // 5. SellerCommissions
+                    var commissions = await _context.SellerCommissions
+                        .Where(c => c.Date >= periodStart && c.Date <= periodEnd)
+                        .SumAsync(c => c.Value);
+                    totalCosts += commissions;
+
+                    // Calcular vendas para este período
+                    decimal totalSales = 0;
+
+                    // 1. CarSaleProfits (vendas de carros)
+                    var carSales = await _context.CarSaleProfits
+                        .Where(s => s.Date >= periodStart && s.Date <= periodEnd)
+                        .SumAsync(s => s.Value);
+                    totalSales += carSales;
+
+                    // 2. FinancingReturns (retornos financeiros)
+                    var financingReturns = await _context.FinancingReturns
+                        .Where(r => r.Date >= periodStart && r.Date <= periodEnd)
+                        .SumAsync(r => r.Value);
+                    totalSales += financingReturns;
+
+                    // Adicionar ponto de dados para este período
+                    dataPoints.Add(new ProfitCostChartDataPoint
+                    {
+                        Date = period,
+                        Label = label,
+                        Costs = totalCosts,
+                        Sales = totalSales
+                    });
+                }
+
+                // Preparar dados para o gráfico
+                var labels = dataPoints.Select(p => p.Label).ToList();
+                var costData = dataPoints.Select(p => p.Costs).ToList();
+                var salesData = dataPoints.Select(p => p.Sales).ToList();
+                var profitData = dataPoints.Select(p => p.Profit).ToList();
+
+                // Log para depuração
+                //foreach (var point in dataPoints)
+                //{
+                //    _logger.LogInformation($"Período: {point.Label}, Custos: {point.Costs}, Vendas: {point.Sales}, Lucro: {point.Profit}");
+                //}
+
+                return Json(new
+                {
+                    labels,
+                    datasets = new object[]
+                    {
+                new
+                {
+                    label = "Custos",
+                    data = costData,
+                    backgroundColor = "rgba(255, 99, 132, 0.7)",
+                    borderColor = "rgba(255, 99, 132, 1)",
+                    borderWidth = 1,
+                    type = "bar"
+                },
+                new
+                {
+                    label = "Vendas",
+                    data = salesData,
+                    backgroundColor = "rgba(54, 162, 235, 0.7)",
+                    borderColor = "rgba(54, 162, 235, 1)",
+                    borderWidth = 1,
+                    type = "bar"
+                },
+                new
+                {
+                    label = "Lucro",
+                    data = profitData,
+                    backgroundColor = "rgba(75, 192, 192, 0.7)",
+                    borderColor = "rgba(75, 192, 192, 1)",
+                    borderWidth = 2,
+                    type = "line",
+                    pointRadius = 5,
+                    pointHoverRadius = 7,
+                    fill = false
+                }
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                //_logger.LogError(ex, "Erro ao gerar dados do gráfico de lucro e custo");
+                return Json(new { error = "Ocorreu um erro ao processar os dados. Verifique os logs para mais detalhes." });
+            }
+        }
         #endregion
 
         #region Análise de Todos os Custos
@@ -560,24 +552,219 @@ namespace F1nanceC0ntrol.Controllers
 
         #endregion
 
-        #region Análise de Custos Fixos
+        #region Análise de Todos os Custos, Vendas e Lucros
 
-        public IActionResult FixedCosts()
+        public async Task<IActionResult> AllTransactions(
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            List<int?> categoryIds = null,
+            string licensePlate = null,
+            string car = null,
+            bool? showCosts = true,
+            bool? showSales = true,
+            string sortBy = "Date",
+            string sortOrder = "Desc")
         {
-            // Implementação futura
-            return View();
+            // Configurar datas padrão se não forem fornecidas
+            var model = new AllTransactionsAnalysisViewModel
+            {
+                StartDate = startDate ?? DateTime.Now.AddMonths(-3),
+                EndDate = endDate ?? DateTime.Now,
+                CategoryIds = categoryIds ?? new List<int?>(),
+                LicensePlate = licensePlate,
+                Car = car,
+                ShowCosts = showCosts ?? true,
+                ShowSales = showSales ?? true,
+                SortBy = sortBy ?? "Date",
+                SortOrder = sortOrder ?? "Desc"
+            };
+
+            // Carregar categorias disponíveis
+            model.AvailableCategories = await _context.Categories.ToListAsync();
+
+            // Ajustar a data final para incluir todo o dia
+            var endDateAdjusted = model.EndDate.AddDays(1).AddSeconds(-1);
+
+            // Lista para armazenar todas as transações
+            var transactions = new List<TransactionItem>();
+
+            // 1. Custos (se selecionado)
+            if (model.ShowCosts)
+            {
+                // 1.1 SellerCommissions
+                var commissions = await _context.SellerCommissions
+                    .Include(c => c.Category)
+                    .Where(c => c.Date >= model.StartDate && c.Date <= endDateAdjusted)
+                    .Where(c => !model.CategoryIds.Any() || (c.CategoryId.HasValue && model.CategoryIds.Contains(c.CategoryId)))
+                    .Select(c => new TransactionItem
+                    {
+                        Id = c.Id,
+                        Type = "Custo",
+                        TransactionType = "Comissionamento",
+                        Date = c.Date,
+                        Category = c.Category.Name,
+                        CategoryId = c.CategoryId,
+                        Value = c.Value,
+                        Description = $"Funcionário: {c.EmployeeName}"
+                    })
+                    .ToListAsync();
+                transactions.AddRange(commissions);
+
+                // 1.2 DailyOperationCosts
+                var dailyCosts = await _context.DailyOperationCosts
+                    .Include(c => c.Category)
+                    .Where(c => c.Date >= model.StartDate && c.Date <= endDateAdjusted)
+                    .Where(c => !model.CategoryIds.Any() || (c.CategoryId.HasValue && model.CategoryIds.Contains(c.CategoryId)))
+                    .Select(c => new TransactionItem
+                    {
+                        Id = c.Id,
+                        Type = "Custo",
+                        TransactionType = "Custo Diário",
+                        Date = c.Date,
+                        Category = c.Category.Name,
+                        CategoryId = c.CategoryId,
+                        Value = c.Value,
+                        Description = "Custo de operação diária"
+                    })
+                    .ToListAsync();
+                transactions.AddRange(dailyCosts);
+
+                // 1.3 FixedCosts
+                var fixedCosts = await _context.FixedCosts
+                    .Include(c => c.Category)
+                    .Where(c => c.Date >= model.StartDate && c.Date <= endDateAdjusted)
+                    .Where(c => !model.CategoryIds.Any() || (c.CategoryId.HasValue && model.CategoryIds.Contains(c.CategoryId)))
+                    .Select(c => new TransactionItem
+                    {
+                        Id = c.Id,
+                        Type = "Custo",
+                        TransactionType = "Custo Fixo",
+                        Date = c.Date,
+                        Category = c.Category.Name,
+                        CategoryId = c.CategoryId,
+                        Value = c.Value,
+                        Description = "Custo fixo mensal"
+                    })
+                    .ToListAsync();
+                transactions.AddRange(fixedCosts);
+
+                // 1.4 AfterSaleCosts
+                var afterSaleCosts = await _context.AfterSaleCosts
+                    .Include(c => c.Category)
+                    .Where(c => c.Date >= model.StartDate && c.Date <= endDateAdjusted)
+                    .Where(c => !model.CategoryIds.Any() || (c.CategoryId.HasValue && model.CategoryIds.Contains(c.CategoryId)))
+                    .Where(c => string.IsNullOrEmpty(model.LicensePlate) || c.LicensePlate.Contains(model.LicensePlate))
+                    .Where(c => string.IsNullOrEmpty(model.Car) || c.Car.Contains(model.Car))
+                    .Select(c => new TransactionItem
+                    {
+                        Id = c.Id,
+                        Type = "Custo",
+                        TransactionType = "Pós-Venda",
+                        Date = c.Date,
+                        Category = c.Category.Name,
+                        CategoryId = c.CategoryId,
+                        LicensePlate = c.LicensePlate,
+                        Car = c.Car,
+                        Value = c.Value,
+                        Description = $"Carro: {c.Car}, Placa: {c.LicensePlate}"
+                    })
+                    .ToListAsync();
+                transactions.AddRange(afterSaleCosts);
+
+                // 1.5 CarCosts
+                var carCosts = await _context.CarCosts
+                    .Include(c => c.Category)
+                    .Where(c => c.Date >= model.StartDate && c.Date <= endDateAdjusted)
+                    .Where(c => !model.CategoryIds.Any() || (c.CategoryId.HasValue && model.CategoryIds.Contains(c.CategoryId)))
+                    .Where(c => string.IsNullOrEmpty(model.LicensePlate) || c.LicensePlate.Contains(model.LicensePlate))
+                    .Where(c => string.IsNullOrEmpty(model.Car) || c.Car.Contains(model.Car))
+                    .Select(c => new TransactionItem
+                    {
+                        Id = c.Id,
+                        Type = "Custo",
+                        TransactionType = "Custo de Carro",
+                        Date = c.Date,
+                        Category = c.Category.Name,
+                        CategoryId = c.CategoryId,
+                        LicensePlate = c.LicensePlate,
+                        Car = c.Car,
+                        Value = c.Value,
+                        Description = $"Carro: {c.Car}, Placa: {c.LicensePlate}"
+                    })
+                    .ToListAsync();
+                transactions.AddRange(carCosts);
+            }
+
+            // 2. Vendas (se selecionado)
+            if (model.ShowSales)
+            {
+                // 2.1 CarSaleProfits (vendas)
+                var carSales = await _context.CarSaleProfits
+                    .Include(c => c.Category)
+                    .Where(c => c.Date >= model.StartDate && c.Date <= endDateAdjusted)
+                    .Where(c => !model.CategoryIds.Any() || (c.CategoryId.HasValue && model.CategoryIds.Contains(c.CategoryId)))
+                    .Where(c => string.IsNullOrEmpty(model.LicensePlate) || c.LicensePlate.Contains(model.LicensePlate))
+                    .Where(c => string.IsNullOrEmpty(model.Car) || c.Car.Contains(model.Car))
+                    .Select(c => new TransactionItem
+                    {
+                        Id = c.Id,
+                        Type = "Venda",
+                        TransactionType = "Venda de Carro",
+                        Date = c.Date,
+                        Category = c.Category.Name,
+                        CategoryId = c.CategoryId,
+                        LicensePlate = c.LicensePlate,
+                        Car = c.Car,
+                        Value = c.Value,
+                        Description = $"Venda - {c.Category.Name}"
+                    })
+                    .ToListAsync();
+                transactions.AddRange(carSales);
+
+                // 2.2 FinancingReturns
+                var financingReturns = await _context.FinancingReturns
+                    .Include(c => c.Category)
+                    .Where(c => c.Date >= model.StartDate && c.Date <= endDateAdjusted)
+                    .Where(c => !model.CategoryIds.Any() || (c.CategoryId.HasValue && model.CategoryIds.Contains(c.CategoryId)))
+                    .Select(c => new TransactionItem
+                    {
+                        Id = c.Id,
+                        Type = "Venda",
+                        TransactionType = "Retorno Financeiro",
+                        Date = c.Date,
+                        Category = c.Category.Name,
+                        CategoryId = c.CategoryId,
+                        Bank = c.Bank,
+                        Value = c.Value,
+                        Description = $"Banco: {c.Bank}"
+                    })
+                    .ToListAsync();
+                transactions.AddRange(financingReturns);
+            }
+
+            // Ordenar os resultados
+            if (model.SortBy == "Date")
+            {
+                transactions = model.SortOrder == "Asc"
+                    ? transactions.OrderBy(t => t.Date).ToList()
+                    : transactions.OrderByDescending(t => t.Date).ToList();
+            }
+            else // Value
+            {
+                transactions = model.SortOrder == "Asc"
+                    ? transactions.OrderBy(t => t.Value).ToList()
+                    : transactions.OrderByDescending(t => t.Value).ToList();
+            }
+
+            // Calcular totais
+            model.TotalCosts = transactions.Where(t => t.Type == "Custo").Sum(t => t.Value);
+            model.TotalSales = transactions.Where(t => t.Type == "Venda").Sum(t => t.Value);
+
+            // Atribuir as transações ao modelo
+            model.Transactions = transactions;
+
+            return View(model);
         }
-
-        #endregion
-
-        #region Análise de Retorno Financeiro
-
-        public IActionResult FinancialReturn()
-        {
-            // Implementação futura
-            return View();
-        }
-
         #endregion
     }
 }
