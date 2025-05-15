@@ -1,6 +1,6 @@
 ﻿@model F1nanceC0ntrol.ViewModels.ProfitCostAnalysisViewModel
 @{
-    ViewData["Title"] = "Análise de Lucro e Custo";
+    ViewData["Title"] = "Análise de Lucro e Custo ao Longo do Tempo";
 }
 
 <h1>Análise de Lucro e Custo ao Longo do Tempo</h1>
@@ -12,43 +12,40 @@
                 <h5>Filtros</h5>
             </div>
             <div class="card-body">
-                <form id="filterForm">
-                    @Html.AntiForgeryToken()
-                    <div class="mb-3">
-                        <label for="startDate" class="form-label">Data Inicial</label>
-                        <input type="date" class="form-control" id="startDate" name="startDate" value="@Model.StartDate.ToString("yyyy-MM-dd")">
+                <div class="mb-3">
+                    <label for="startDate" class="form-label">Data Inicial</label>
+                    <input type="date" class="form-control" id="startDate" name="startDate" value="@Model.StartDate.ToString("yyyy-MM-dd")">
+                </div>
+                <div class="mb-3">
+                    <label for="endDate" class="form-label">Data Final</label>
+                    <input type="date" class="form-control" id="endDate" name="endDate" value="@Model.EndDate.ToString("yyyy-MM-dd")">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Agrupar por</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="aggregationType" id="aggregationMonth" value="Month" @(Model.AggregationType == "Month" ? "checked" : "")>
+                        <label class="form-check-label" for="aggregationMonth">
+                            Mês
+                        </label>
                     </div>
-                    <div class="mb-3">
-                        <label for="endDate" class="form-label">Data Final</label>
-                        <input type="date" class="form-control" id="endDate" name="endDate" value="@Model.EndDate.ToString("yyyy-MM-dd")">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="aggregationType" id="aggregationYear" value="Year" @(Model.AggregationType == "Year" ? "checked" : "")>
+                        <label class="form-check-label" for="aggregationYear">
+                            Ano
+                        </label>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Agregação</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="aggregationType" id="aggregationMonth" value="Month" checked>
-                            <label class="form-check-label" for="aggregationMonth">
-                                Por Mês
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="aggregationType" id="aggregationYear" value="Year">
-                            <label class="form-check-label" for="aggregationYear">
-                                Por Ano
-                            </label>
-                        </div>
-                    </div>
-                    <button type="button" id="generateChartBtn" class="btn btn-primary">Gerar Gráfico</button>
-                </form>
+                </div>
+                <button type="button" id="filterButton" class="btn btn-primary">Filtrar</button>
             </div>
         </div>
     </div>
     <div class="col-md-9">
         <div class="card">
             <div class="card-header">
-                <h5>CUSTO e LUCRO ao longo do Tempo</h5>
+                <h5>Lucro e Custo ao Longo do Tempo</h5>
             </div>
             <div class="card-body">
-                <div id="chartContainer">
+                <div style="height: 400px;">
                     <canvas id="profitCostChart"></canvas>
                 </div>
             </div>
@@ -61,13 +58,16 @@
 </div>
 
 @section Scripts {
+    <!-- Adicionar referência ao Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
         let profitCostChart;
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Inicializar o gráfico vazio
             const ctx = document.getElementById('profitCostChart').getContext('2d');
+
+            // Inicializar o gráfico vazio
             profitCostChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -78,36 +78,21 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Valor (R$)'
-                            }
-                        },
                         x: {
-                            title: {
-                                display: true,
-                                text: 'Período'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top',
+                            stacked: false
                         },
-                        title: {
-                            display: false
+                        y: {
+                            stacked: false
                         }
                     }
                 }
             });
 
-            // Configurar o botão de gerar gráfico
-            document.getElementById('generateChartBtn').addEventListener('click', generateChart);
-
             // Gerar o gráfico inicial
             generateChart();
+
+            // Adicionar listener para o botão de filtrar
+            document.getElementById('filterButton').addEventListener('click', generateChart);
         });
 
         async function generateChart() {
@@ -122,14 +107,10 @@
             }
 
             try {
-                // Obter o token anti-falsificação
-                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
-
                 const response = await fetch('/Analysis/GetProfitCostData', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         startDate: startDateStr,
