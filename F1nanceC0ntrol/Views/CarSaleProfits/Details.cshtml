@@ -1,0 +1,53 @@
+﻿@model F1nanceC0ntrol.Models.CarSaleProfit
+
+@{
+    ViewData["Title"] = "Detalhes da Venda de Carro";
+}
+
+<h1>Detalhes da Venda de Carro</h1>
+
+<div>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Category)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Category.Name)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.LicensePlate)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.LicensePlate)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Car)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Car)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Date)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Date)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Value)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Value)
+        </dd>
+        <dt class="col-sm-3">
+            Lucro
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Value)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Editar</a>
+    <a asp-action="Index" class="btn btn-secondary">Voltar</a>
+</div>

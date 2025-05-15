@@ -19,6 +19,7 @@ namespace F1nanceC0ntrol.Data
         public DbSet<AfterSaleCost> AfterSaleCosts { get; set; }
         public DbSet<CarCost> CarCosts { get; set; }
         public DbSet<FinancingReturn> FinancingReturns { get; set; }
+        public DbSet<CarSaleProfit> CarSaleProfits { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

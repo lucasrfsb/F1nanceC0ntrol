@@ -269,6 +269,15 @@ namespace F1nanceC0ntrol.Controllers
                 select new { fr.Date, fr.Value }
             ).ToListAsync();
 
+            // Adicionar lucros de venda de carro
+            profits = profits.Concat(
+                await (
+                    from csp in _context.CarSaleProfits
+                    where csp.Date >= startDate && csp.Date <= endDate
+                    select new { csp.Date, csp.Value }
+                ).ToListAsync()
+            ).ToList();
+
             // Agregar dados por mês ou ano
             var costData = new List<decimal>();
             var profitData = new List<decimal>();

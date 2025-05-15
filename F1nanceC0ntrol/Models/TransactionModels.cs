@@ -86,6 +86,21 @@ namespace F1nanceC0ntrol.Models
         public string Bank { get; set; }
     }
 
+    // 7. Lucro de venda de carro
+    public class CarSaleProfit : BaseTransaction
+    {
+        [Required(ErrorMessage = "A placa é obrigatória")]
+        [StringLength(10, ErrorMessage = "A placa deve ter no máximo 10 caracteres")]
+        [Display(Name = "Placa")]
+        public string LicensePlate { get; set; }
+
+        [Required(ErrorMessage = "O carro é obrigatório")]
+        [StringLength(100, ErrorMessage = "O nome do carro deve ter no máximo 100 caracteres")]
+        [Display(Name = "Carro")]
+        public string Car { get; set; }
+
+    }
+
     // Classe para categorias
     public class Category
     {
