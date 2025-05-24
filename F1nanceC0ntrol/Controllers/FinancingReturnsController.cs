@@ -50,7 +50,15 @@ namespace F1nanceC0ntrol.Controllers
         // GET: FinancingReturns/Create
         public IActionResult Create()
         {
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name");
+            ViewData["CategoryId"] = _context.Categories
+            .Where(c => c.Name == "Financiamento")
+            .Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = c.Name
+
+            })
+            .ToList();
             return View();
         }
 
@@ -68,8 +76,15 @@ namespace F1nanceC0ntrol.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", financingReturn.CategoryId);
-            return View(financingReturn);
+            ViewData["CategoryId"] = _context.Categories
+            .Where(c => c.Name == "Financiamento")
+            .Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = c.Name
+
+            })
+            .ToList(); return View(financingReturn);
         }
 
         // GET: FinancingReturns/Edit/5

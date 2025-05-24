@@ -50,8 +50,16 @@ namespace F1nanceC0ntrol.Controllers
         // GET: SellerCommissions/Create
         public IActionResult Create()
         {
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name");
-            return View();
+            ViewData["CategoryId"] = _context.Categories
+            .Where(c => c.Name == "Comissões")
+            .Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = c.Name
+
+            })
+            .ToList();
+                return View();
         }
 
         // POST: SellerCommissions/Create
@@ -68,8 +76,15 @@ namespace F1nanceC0ntrol.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", commission.CategoryId);
-            return View(commission);
+            ViewData["CategoryId"] = _context.Categories
+            .Where(c => c.Name == "Comissões")
+            .Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = c.Name
+
+            })
+            .ToList(); return View(commission);
         }
 
         // GET: SellerCommissions/Edit/5

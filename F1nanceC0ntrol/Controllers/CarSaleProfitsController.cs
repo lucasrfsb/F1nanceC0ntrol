@@ -48,8 +48,15 @@ namespace F1nanceC0ntrol.Controllers
         // GET: CarSaleProfits/Create
         public IActionResult Create()
         {
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name");
-            // Definir data padrão como hoje
+            ViewData["CategoryId"] = _context.Categories
+            .Where(c => c.Name == "Venda de Carros")
+            .Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = c.Name
+
+            })
+            .ToList();
             var model = new CarSaleProfit { Date = DateTime.Now };
             return View(model);
         }
@@ -66,7 +73,15 @@ namespace F1nanceC0ntrol.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", carSaleProfit.CategoryId);
+            ViewData["CategoryId"] = _context.Categories
+            .Where(c => c.Name == "Venda de Carros")
+            .Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = c.Name
+
+            })
+            .ToList();
             return View(carSaleProfit);
         }
 
