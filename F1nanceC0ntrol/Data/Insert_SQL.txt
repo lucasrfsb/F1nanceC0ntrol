@@ -1,0 +1,14 @@
+﻿-- Inserir categorias na tabela [F1nanceC0ntrol].[dbo].[Categories]
+INSERT INTO [F1nanceC0ntrol].[dbo].[Categories] (Id, Name, Description)
+VALUES 
+(1, 'Vendas', 'Categorias relacionadas a vendas'),
+(2, 'Manutenção', 'Gastos com manutenção de veículos'),
+(3, 'Administrativo', 'Despesas administrativas'),
+(4, 'Marketing', 'Gastos com publicidade e marketing'),
+(5, 'Impostos', 'Pagamentos de impostos e taxas'),
+(6, 'Comissões', 'Comissões pagas a vendedores'),
+(7, 'Financiamento', 'Retornos de financiamento'),
+(8, 'Operacional', 'Custos operacionais diários'),
+(9, 'Infraestrutura', 'Gastos com infraestrutura'),
+(10, 'Pós-Venda', 'Serviços de pós-venda'),
+(11, 'Venda de Carros', 'Lucros obtidos com a venda de veículos');
